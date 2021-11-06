@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t aom87shortcut/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true aom87shortcut/react-test npm test
+
+after_success:
+  - docker build -t aom87shortcut/multi-client ./client
+  - docker build -t aom87shortcut/multi-nginx ./nginx
+  - docker build -t aom87shortcut/multi-server ./server
+  - docker build -t aom87shortcut/multi-worker ./worker
+
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  - docker push aom87shortcut/multi-client
+  - docker push aom87shortcut/multi-nginx
+  - docker push aom87shortcut/multi-server
+  - docker push aom87shortcut/multi-worker
